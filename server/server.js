@@ -13,7 +13,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// set port, listen for requests
 const PORT = process.env.NODE_DOCKER_PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on that fucking port ${PORT}.`);
@@ -35,11 +34,14 @@ con.connect(err => {
 
 const queries = require('./app/controllers/queries');
 
-// simple route
 app.get("/", (req, res) => {
   res.json({ message: "i'm alive." });
 });
 
 app.get('/consulta-completa', (req, res) => {
   queries.viewCompleta(req, res, con);
+});
+
+app.get('/consulta-pacientes', (req, res) => {
+  queries.viewPacientes(req, res, con);
 });

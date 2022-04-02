@@ -20,7 +20,7 @@ const queries = {
   },
 
   viewPacientes: (req, res, connection) => {
-    connection.query("SELECT * FROM projeto2a.consultaCompleta", (err, result, fields) => {
+    connection.query("SELECT * FROM projeto2a.consultaPacientes", (err, result, fields) => {
       if (err) {
         throw err;
       }
