@@ -1,21 +1,13 @@
 {
   "name": "nodejs-express-sequelize-mysql",
   "version": "1.0.0",
-  "description": "Node.js Rest Apis with Express, Sequelize & MySQL",
+  "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon -L server.js"
   },
-  "keywords": [
-    "nodejs",
-    "express",
-    "rest",
-    "api",
-    "sequelize",
-    "mysql"
-  ],
-  "author": "bezkoder",
+  "author": "casseb",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

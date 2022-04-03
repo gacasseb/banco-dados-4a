@@ -23,7 +23,10 @@ services:
       - mysqldb
     build: ./server
     # command: bash -c 'while !</dev/tcp/db/3306; do sleep 1; done; npm start'
-    restart: unless-stopped
+    # restart: unless-stopped
+    # volumes:
+      # - "/server:/server"
+      # - "/server/node_modules:/server/node_modules"
     env_file: ./.env
     ports:
       - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT

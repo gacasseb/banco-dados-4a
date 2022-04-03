@@ -45,3 +45,15 @@ app.get('/consulta-completa', (req, res) => {
 app.get('/consulta-pacientes', (req, res) => {
   queries.viewPacientes(req, res, con);
 });
+
+app.get('/consulta-covid', (req, res) => {
+  queries.queryByExam(req, res, con);
+});
+
+app.get('/consulta-medico', (req, res) => {
+  queries.queryByMedic(req, res, con);
+});
+
+app.get('/consulta-cidade', (req, res) => {
+  queries.queryByCity(req, res, con);
+});
