@@ -22,7 +22,7 @@ var con = mysql.createConnection({
   host: 'mysqldb',
   user: 'root',
   password: '123456',
-  database: 'projeto2a'
+  database: 'projeto3a'
 });
 
 con.connect(err => {
