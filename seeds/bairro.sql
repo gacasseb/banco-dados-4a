@@ -1,3 +1,12 @@
-USE projeto2a;
-INSERT INTO projeto2a.Bairro(nomeBairro)
+USE projeto4a;
+INSERT INTO projeto4a.Bairro(nomeBairro)
 VALUES ('Jardim das américas');
+
+INSERT INTO projeto4a.Bairro(nomeBairro)
+VALUES ('Jardim das flores');
+
+INSERT INTO projeto4a.Bairro(nomeBairro)
+VALUES ('Brooklin');
+
+INSERT INTO projeto4a.Bairro(nomeBairro)
+VALUES ('Moema');
