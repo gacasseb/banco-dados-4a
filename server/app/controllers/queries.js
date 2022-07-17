@@ -1,81 +1,72 @@
 const queries = {
-  viewCompleta: (req, res, connection) => {
-    connection.query("SELECT * FROM projeto2a.consultaCompleta", (err, result, fields) => {
-      if (err) {
-        throw err;
+  insertTransaction: async (req, res, connection) => {
+
+    const transaction = req.body.transaction;
+
+    await connection.beginTransaction();
+
+    try {
+
+      let type = await getTransactionType(transaction.type, connection);
+
+      if (type.length == 0) {
+        res.status(404).json({message: "Tipo de transação não encontrado"});
+        return;
       }
 
-      res.send(result);
-    });
+      let account = await getAccount(transaction.account, connection);
+
+      if (account.length == 0) {
+        res.status(404).json({message: "Conta não encontrada"});
+        return;
+      }
+
+      // Soma ao saldo atual da conta
+      if ( type[0].tipo == 'receita' ) {
+        var saldo_atual = parseFloat(account[0].saldo_atual) + parseFloat(transaction.value);
+      } else {
+        var saldo_atual = parseFloat(account[0].saldo_atual) - parseFloat(transaction.value);
+      }
+
+      await createTransaction({
+        ...transaction,
+      });
+
+      let update = await updateAccountBalance(transaction.account, saldo_atual, connection);
+      console.log('update', update);
+
+      await connection.commit();
+
+      res.json(type);
+
+    } catch (error) {
+
+      console.log('entrou no catch', error);
+      connection.rollback();
+      res.status(400).send("Error!");
+    }
   },
-
-  queryByExam: (req, res, connection) => {
-
-    let exam = 'Exame de covid';
-
-    const sql = `SELECT * FROM consultaPacientes\
-    INNER JOIN Exame\
-    ON idConsulta = Exame.Consulta_idConsulta\
-    INNER JOIN TipoExame\
-    ON Exame.TipoExame_idTipoExame = TipoExame.idTipoExame\
-    WHERE TipoExame.nomeTipoExame = '${exam}';`;
-
-    connection.query(sql, (err, result, fields) => {
-      if (err) {
-        throw err;
-      }
-
-      res.send(result);
-    });
-  },
-
-  queryByMedic: (req, res, connection) => {
-
-    crm = '123456789';
-
-    const sql = `SELECT * FROM consultaPacientes\
-    WHERE crmMedico = '${crm}';`;
-
-    connection.query(sql, (err, result, fields) => {
-      if (err) {
-        throw err;
-      }
-
-      res.send(result);
-    });
-  },
-
-  queryByCity: (req, res, connection) => {
-
-    let year = '2021';
-    let city = 'Foz do Iguaçu';
-  
-    const sql = `SELECT * FROM consultaPacientes\
-    INNER JOIN Endereco\
-    ON Endereco_idEndereco = Endereco.idEndereco\
-    INNER JOIN Cidade\
-    ON Endereco.Cidade_idCidade = idCidade\
-    WHERE Cidade.nomeCidade = '${city}'\
-    AND YEAR(dataConsulta) = ${year};`;
-
-    connection.query(sql, (err, result, fields) => {
-      if (err) {
-        throw err;
-      }
-
-      res.send(result);
-    });
-  },
-
-  viewPacientes: (req, res, connection) => {
-    connection.query("SELECT * FROM projeto2a.consultaPacientes", (err, result, fields) => {
-      if (err) {
-        throw err;
-      }
-
-      res.send(result);
-    });
-  }
 };
+
+function updateAccountBalance(accountId, value, connection) {
+  const sql = `UPDATE Conta SET saldo_atual = ${value} WHERE Conta.id = ${accountId}`;
+  console.log('Executando update', sql);
+  return connection.query(sql);
+}
+
+function getAccount(accountId, connection) {
+  const sql = `SELECT saldo_atual FROM Conta WHERE id = ${accountId}`;
+  return connection.query(sql);
+}
+
+function getTransactionType(transactionId, connection) {
+  const sql = `SELECT tipo FROM Tipo_Transacao WHERE id = ${transactionId}`;
+  return connection.query(sql);
+}
+
+function createTransaction(transaction, connection) {
+  const sql = `INSERT INTO Transacao VALUES (data, valor, numero_documento, observacao, saldo, Conta_id, Tipo_Transacao_id)`;
+  return connection.query(sql);
+}
 
 module.exports = queries;

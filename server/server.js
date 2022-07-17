@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const util = require("util");
 var mysql = require('mysql');
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.NODE_DOCKER_PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server is running on that fucking port ${PORT}.`);
+  console.log(`Server is running on port ${PORT}.`);
 });
 
 var con = mysql.createConnection({
@@ -24,6 +25,8 @@ var con = mysql.createConnection({
   password: '123456',
   database: 'projeto4a'
 });
+
+con.query = util.promisify(con.query).bind(con);
 
 con.connect(err => {
   if (err) {
@@ -35,25 +38,9 @@ con.connect(err => {
 const queries = require('./app/controllers/queries');
 
 app.get("/", (req, res) => {
-  res.json({ message: "i'm alive." });
+  res.json({ message: "aloha!" });
 });
 
-app.get('/consulta-completa', (req, res) => {
-  queries.viewCompleta(req, res, con);
-});
-
-app.get('/consulta-pacientes', (req, res) => {
-  queries.viewPacientes(req, res, con);
-});
-
-app.get('/consulta-covid', (req, res) => {
-  queries.queryByExam(req, res, con);
-});
-
-app.get('/consulta-medico', (req, res) => {
-  queries.queryByMedic(req, res, con);
-});
-
-app.get('/consulta-cidade', (req, res) => {
-  queries.queryByCity(req, res, con);
+app.post('/insert-transaction', (req, res) => {
+  queries.insertTransaction(req, res, con);
 });
