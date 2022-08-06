@@ -44,3 +44,11 @@ app.get("/", (req, res) => {
 app.post('/insert-transaction', (req, res) => {
   queries.insertTransaction(req, res, con);
 });
+
+app.post('/select-transaction', (req, res) => {
+  queries.selectTransactions(req, res, con);
+});
+
+app.post('/select-transaction-range', (req, res) => {
+  queries.selectTransactionsByTipeRange(req, res, con);
+});
