@@ -7,7 +7,7 @@ var mysql = require('mysql');
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:8081"
+  origin: "http://localhost:3000"
 };
 
 app.use(cors(corsOptions));
@@ -51,4 +51,12 @@ app.post('/select-transaction', (req, res) => {
 
 app.post('/select-transaction-range', (req, res) => {
   queries.selectTransactionsByTipeRange(req, res, con);
+});
+
+app.get('/empresa', (req, res) => {
+  queries.getCompanys(req, res, con);
+});
+
+app.get('/conta/:id', (req, res) => {
+  queries.getAccount(req, res, con);
 });

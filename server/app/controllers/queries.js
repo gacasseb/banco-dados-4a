@@ -40,8 +40,9 @@ const queries = {
       console.log('transaction inserted');
 
       let update = await updateAccountBalance(transaction.account, saldo_atual, connection);
-      console.log('update', update);
-
+      console.log('saldo da conta atualizada com sucesso, novo saldo: ', saldo_atual);
+      // throw new Error("Algo inesperado aconteceu.");
+      
       await connection.commit();
 
       res.json(type);
@@ -55,12 +56,14 @@ const queries = {
   },
   
   selectTransactions: async (req, res, connection) => {
+    const company = req.body.company;
+    const account = req.body.account;
     let query = `select Empresa.nome as empresa, Conta.nome, Conta.saldo_atual, Transacao.data, Transacao.numero_documento, Transacao.valor, Transacao.saldo, Transacao.observacao from Empresa
     INNER JOIN Conta
     ON Conta.Empresa_id = Empresa.id
     INNER JOIN Transacao
     ON Transacao.Conta_id = Conta.id
-    where Empresa.id = 1 and Conta.id = 2;`;
+    where Empresa.id = ${company} and Conta.id = ${account};`;
 
     let result = await connection.query(query).catch(err => res.status(400).json(err));
 
@@ -77,10 +80,11 @@ const queries = {
 
     let params = req.body;
 
-    let conditions = `Empresa.id = (?) and Tipo_Transacao.tipo = (?) and Transacao.data between (?) and (?)`;
+    // let conditions = `Empresa.id = (?) and Tipo_Transacao.tipo = (?) and Transacao.data between (?) and (?)`;
+    let conditions = `Empresa.id = (?) and Transacao.data between (?) and (?)`;
     let values = [
       params.company, // id da empresa
-      params.type, // receita ou despesa
+      // params.type, // receita ou despesa
       params.date[0],
       params.date[1]
     ];
@@ -108,7 +112,38 @@ const queries = {
     }
 
     res.json(result);
-  }
+  },
+
+  getCompanys: async (req, res, connection) => {
+    let query = `select * from Empresa`;
+
+    let result = await connection.query(query).catch(err => res.status(400).json(err));
+
+    if ( Array.isArray(result) && result.length > 0 ) {
+      // printScreen2(result);
+    } else {
+      return res.status(400).json({msg: "Não foram encontradas empresas."});
+    }
+
+    res.json(result);
+  },
+
+  getAccount: async (req, res, connection) => {
+    if ( !req.params.id || req.params.id == 0 ) {
+      return res.status(404).json({msg: "ID da conta não enviado."});
+    }
+    let query = `select * from Conta where Conta.Empresa_id = ${req.params.id}`;
+
+    let result = await connection.query(query).catch(err => res.status(400).json(err));
+
+    if ( Array.isArray(result) && result.length > 0 ) {
+      // printScreen2(result);
+    } else {
+      return res.status(404).json({msg: "Não foram encontradas contas."});
+    }
+
+    res.json(result);
+  },
 };
 
 function updateAccountBalance(accountId, value, connection) {
@@ -131,7 +166,8 @@ function createTransaction(transaction, connection) {
   const sql = `INSERT INTO Transacao(data, valor, numero_documento, observacao, saldo, Conta_id, Tipo_Transacao_id) VALUES (?)`;
   let values = [
     [
-      new Date().toISOString().slice(0, 19).replace("T", " "),
+      // new Date().toISOString().slice(0, 19).replace("T", " "),
+      transaction.date,
       transaction.value,
       transaction.doccument,
       transaction.obs,
