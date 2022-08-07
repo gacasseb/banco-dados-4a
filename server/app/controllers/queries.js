@@ -65,7 +65,7 @@ const queries = {
     let result = await connection.query(query).catch(err => res.status(400).json(err));
 
     if ( Array.isArray(result) && result.length > 0 ) {
-      printTransactions(result);
+      printScreen1(result);
     } else {
       return res.status(400).json({msg: "Não há transações para esta conta."});
     }
@@ -90,7 +90,7 @@ const queries = {
       values.push(params.account);
     }
 
-    let query = `select Empresa.nome, Conta.nome, Conta.saldo_atual, Transacao.data, Transacao.numero_documento, Transacao.valor, Transacao.saldo, Transacao.observacao from Empresa
+    let query = `select Empresa.nome as empresa, Tipo_Transacao.nome as tipo_nome, Tipo_Transacao.tipo as tipo, Conta.nome, Conta.saldo_atual, Transacao.data, Transacao.numero_documento, Transacao.valor, Transacao.saldo, Transacao.observacao from Empresa
     INNER JOIN Conta
     ON Conta.Empresa_id = Empresa.id
     INNER JOIN Transacao
@@ -102,7 +102,7 @@ const queries = {
     let result = await connection.query(query, values).catch(err => res.status(400).json(err));
 
     if ( Array.isArray(result) && result.length > 0 ) {
-      printTransactions(result);
+      printScreen2(result);
     } else {
       return res.status(400).json({msg: "Não foram encontradas transações."});
     }
@@ -146,11 +146,21 @@ function createTransaction(transaction, connection) {
   return connection.query(sql, values);
 }
 
-function printTransactions(transactions) {
-
+function printScreen1(transactions) {
   console.log(`\nEmpresa cadastrada: ${transactions[0].empresa}`);
-  console.log(`Conta: ${transactions[0].nome} `, `Saldo atual: R$ ${parseFloat(transactions[0].saldo_atual)}`)
+  console.log(`Conta: ${transactions[0].nome} `, `Saldo atual: R$ ${parseFloat(transactions[0].saldo_atual)}`);
 
+  printTransactions(transactions);
+}
+
+function printScreen2(transactions) {
+  console.log(`\nEmpresa cadastrada: ${transactions[0].empresa}`);
+  console.log(`Conta: ${transactions[0].nome} `, `Saldo atual: R$ ${parseFloat(transactions[0].saldo_atual)}`);
+
+  printTransactionsByType(transactions);
+}
+
+function printTransactions(transactions) {
   let rows = [];
 
   transactions.forEach(transaction => {
@@ -165,6 +175,33 @@ function printTransactions(transactions) {
   });
 
   console.table(rows);
+}
+
+function printTransactionsByType(transactions) {
+  let rows = [];
+  let totalIncome = 0, totalExpense = 0;
+
+  transactions.forEach(transaction => {
+
+    if ( transaction.tipo == 'receita') {
+      totalIncome += parseFloat(transaction.valor);
+    } else {
+      totalExpense += parseFloat(transaction.valor);
+    }
+
+    let date = new Date(transaction.data);
+    rows.push({
+      Despesa: transaction.tipo_nome,
+      Data: (date.getDate() + 1) + '/' + date.getMonth() + '/' + date.getFullYear(),
+      'Valor Total': 'R$ ' + parseFloat(transaction.valor),
+      // Saldo: 'R$ ' + transaction.saldo
+    });
+  });
+  
+  console.table(rows);
+
+  console.log(`\Total receita: R$ ${totalIncome}`);
+  console.log(`\Total despesa: R$ ${totalExpense}`);
 }
 
 module.exports = queries;
